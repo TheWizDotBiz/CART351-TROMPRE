@@ -1,13 +1,23 @@
 //THREE.js nonsense
 //imports addons from up somewhere, the URl for the files are in the index.html file
-import * as THREE from "three";
+//import * as THREE from "three"; //was "three"
+//import { THREE } from "three";
+//const { AmmoPhysics, PhysicsLoader } = ENABLE3D; 
+//import { Project, Scene3D, PhysicsLoader, ExtendedObject3D, ExtendedMesh } from 'enable3d';
+const { AmmoPhysics, PhysicsLoader } = ENABLE3D;
 import { GLTFLoader } from "three/addons/GLTFLoader.js";
 import { OrbitControls } from "three/addons/OrbitControls.js";
 import { FirstPersonControls } from "three/addons/FirstPersonControls.js";
+//import { PhysicsLoader } from "enable3d";
+//import { Scene3D } from "enable3d/dist/scene3d.js";
 
 //import objects
 import cube from "./obj/cube.js";
 import wizard from "./obj/wizard.js";
+//gltf stuff to import models
+const loader = new GLTFLoader();
+const wizardModel = await loader.loadAsync('models/wizard.glb');
+//import { Scene3D } from "enable3d";
 //import { Socket } from "socket.io";
 //import e from "express";
 
@@ -123,20 +133,26 @@ function runOnceConnected(){
     })
 }
 
-
-//Creates a scene and camera, as well as a WebGL renderer (Three.js is based off of WebGL)
 const scene = new THREE.Scene();
+
+const MainScene = () => {
+//Creates a scene and camera, as well as a WebGL renderer (Three.js is based off of WebGL)
+
+const clock = new THREE.Clock();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
+//Add light, doesnt seem to work for some reason
+scene.add(new THREE.AmbientLight(0xffffff));
+//add physics. Courtesy of Ammo.js?
+const physics = new AmmoPhysics(scene);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-//gltf stuff to import models
-const loader = new GLTFLoader();
 
-const wizardModel = await loader.loadAsync('models/wizard.glb');
+
+
 
 
 loader.load('models/room.glb', function(gltf){
@@ -192,6 +208,8 @@ const cube = new THREE.Mesh( geometry, material );
 scene.add( cube );
 */
 const TestCube = new cube(1, 1, 1, "#F28C28", scene);
+//test add physics to cube
+//this.physics.add.existing(TestCube);
 
 //test wizard
 
@@ -208,23 +226,29 @@ loadWizard(testWizardTwo);
 //Camera position foward ig
 camera.position.z = 5;
 camera.position.y = 2;
+function animate() {
+    //rotato cube
+        requestAnimationFrame( animate ); //this requests the animate() function to be ran next frame, this is why you always call it first at the beginning of animate(), so animate is ran again.
+        //if you need time apparently JS has a builtin date() function which can return stuff like seconds and milliseconds, could be used for a timer
+        //theres deffo gotta be a better alternative tho.
+        //cube.rotation.x += 0.01;
+        //cube.rotation.y += 0.01;
+        physics.update(clock.getDelta() * 1000);
+        handleInput();
+        renderer.render( scene, camera );
+    }
+    animate();
+
+} //MainScene end
+
+PhysicsLoader('lib/ammo/kripken/ammo.js', () => MainScene());
+
 
 document.addEventListener("keydown", Keyinput);
 document.addEventListener("keyup", keyUp);
 let inputList = new Array();
 //This does the rendering   
-function animate() {
-//rotato cube
-    requestAnimationFrame( animate ); //this requests the animate() function to be ran next frame, this is why you always call it first at the beginning of animate(), so animate is ran again.
-    //if you need time apparently JS has a builtin date() function which can return stuff like seconds and milliseconds, could be used for a timer
-    //theres deffo gotta be a better alternative tho.
-    //cube.rotation.x += 0.01;
-    //cube.rotation.y += 0.01;
-    
-	handleInput();
-	renderer.render( scene, camera );
-}
-animate();
+
 
 //TAKES in the iput by reading keys
 function Keyinput(event){
