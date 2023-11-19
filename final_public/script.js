@@ -134,29 +134,42 @@ function runOnceConnected(){
 }
 
 const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+camera.position.z = 5;
+camera.position.y = 2;
+let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
 
+
+//necessary for physics stuff and enable3d whatnots.
 const MainScene = () => {
 //Creates a scene and camera, as well as a WebGL renderer (Three.js is based off of WebGL)
 
 const clock = new THREE.Clock();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
+
 //Add light, doesnt seem to work for some reason
 scene.add(new THREE.AmbientLight(0xffffff));
 //add physics. Courtesy of Ammo.js?
 const physics = new AmmoPhysics(scene);
+physics.debug.enable(true);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 
-
-
-
+//a box to contain the player, camera will be appended as child.
+//const playerCol = physics.add.box({x: camera.position.x, y: camera.position.y, z: camera.position.z, width: 2, height: 0.1, depth: 2, collisionFlags: 0}, {lambert: {color: 'red', transparent: true, opacity: 0.5}});
+//playerCol.add(camera);
+camera.position.z = 5;
+camera.position.y = 2;
+let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
 
 loader.load('models/room.glb', function(gltf){
     scene.add(gltf.scene);
+    physics.add.existing(gltf.scene, { shape: 'convex'});
+    gltf.scene.body.setCollisionFlags(1); //set to kinematic
+    //after this is completed, the level should have collion, you may then add physics and collision to the camera
+    
 }, undefined, function(error){
     console.error(error);
 });
@@ -224,8 +237,7 @@ loadWizard(testWizardTwo);
 */
 
 //Camera position foward ig
-camera.position.z = 5;
-camera.position.y = 2;
+
 function animate() {
     //rotato cube
         requestAnimationFrame( animate ); //this requests the animate() function to be ran next frame, this is why you always call it first at the beginning of animate(), so animate is ran again.
@@ -234,6 +246,7 @@ function animate() {
         //cube.rotation.x += 0.01;
         //cube.rotation.y += 0.01;
         physics.update(clock.getDelta() * 1000);
+        physics.updateDebugger();
         handleInput();
         renderer.render( scene, camera );
     }
@@ -241,7 +254,7 @@ function animate() {
 
 } //MainScene end
 
-PhysicsLoader('lib/ammo/kripken/ammo.js', () => MainScene());
+PhysicsLoader('lib/ammo/kripken', () => MainScene());
 
 
 document.addEventListener("keydown", Keyinput);
