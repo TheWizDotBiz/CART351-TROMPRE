@@ -75,15 +75,15 @@ function runOnceConnected(){
 
    clientSocket.on("updatePlayerFromServer", function(data){
       //  localPlayerList = data;
-      console.log("running updatePlayerFromServer");
-      console.log("data length is " + data.length + " wizardList length is " + wizardList.length);  
+     // console.log("running updatePlayerFromServer");
+      //console.log("data length is " + data.length + " wizardList length is " + wizardList.length);  
       //movement
       for(var i = 0; i < data.length; i++){
         var exists = false;
         for(var j = 0 ; j < wizardList.length; j++){
             if(wizardList[j].name == data[i].id){
                 exists = true;
-                console.log("moving wizard " + wizardList[j].name + " to " + data[i].x + " " + data[i].y + data[i].z);
+              //  console.log("moving wizard " + wizardList[j].name + " to " + data[i].x + " " + data[i].y + data[i].z);
                 wizardList[j].position.x = data[i].x;
                 wizardList[j].position.y = data[i].y;
                 wizardList[j].position.z = data[i].z;
@@ -98,7 +98,7 @@ function runOnceConnected(){
       //make self invis
      for(var l = 0; l < wizardList.length; l++){
         if(wizardList[l].name == socketId){
-            console.log("you should now be invis!");
+         //   console.log("you should now be invis!");
             wizardList[l].visible = false;
             l = wizardList.length;
         }
@@ -138,6 +138,9 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 camera.position.z = 5;
 camera.position.y = 2;
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
+const raycaster = new THREE.Raycaster();
+raycaster.camera = camera;
+//raycaster.far = 0.5; //determines ray length? check for THREE.js docs not enable3d
 
 
 //necessary for physics stuff and enable3d whatnots.
@@ -236,7 +239,24 @@ loadWizard(testWizard);
 loadWizard(testWizardTwo);
 */
 
-//Camera position foward ig
+/*
+const closest = () => {
+    var returnValue = false;
+    const raycaster = physics.add.raycaster('closest');
+    raycaster.setRayFromWorld(camera.position.x, camera.position.y, camera.position.z);
+    var FORWARD = camera.getWorldDirection;
+    console.log("FORWARD : " + FORWARD);
+    raycaster.setRayToWorld(FORWARD);
+    raycaster.rayTest();
+    if(raycaster.hasHit()){
+        console.log("HIT SOMETHING!");
+        returnValue = true;
+    }
+    console.log("racyastfront " + returnValue);
+    return returnValue;
+    raycaster.destroy();
+}*/
+
 
 function animate() {
     //rotato cube
@@ -259,8 +279,7 @@ PhysicsLoader('lib/ammo/kripken', () => MainScene());
 
 document.addEventListener("keydown", Keyinput);
 document.addEventListener("keyup", keyUp);
-let inputList = new Array();
-//This does the rendering   
+let inputList = new Array(); 
 
 
 //TAKES in the iput by reading keys
@@ -301,6 +320,7 @@ function handleInput(){
             case "ArrowUp":
                 //cube.position.x += 0.1;
                 //camera.position.z -= 0.1;
+                raycastCheck();
                 camera.translateZ(-0.1);
             break;
 
@@ -328,10 +348,18 @@ function handleInput(){
     checkCameraDifference();
 }
 
+function raycastCheck(){
+    var returnValue = false;
+    raycaster.set(camera.position, camera.getWorldDirection);
+    const intersects = raycaster.intersectObjects(scene.children);
+    console.log(intersects);
+    return returnValue;
+}
+
 function checkCameraDifference(){
     //console.log("running checkCameraDifference");
    // console.log(cameraPos + " " + camera.position);
-   console.log("ROTATION Y " + camera.rotation.y);
+   //console.log("ROTATION Y " + camera.rotation.y);
    let thisCamPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
    var change = false;
    for(var i = 0; i < cameraPos.length; i++){
@@ -347,5 +375,7 @@ function checkCameraDifference(){
 
     cameraPos = thisCamPos;
 }
+
+
 
 
