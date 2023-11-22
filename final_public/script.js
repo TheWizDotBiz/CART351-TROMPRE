@@ -140,7 +140,8 @@ camera.position.y = 2;
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
 const raycaster = new THREE.Raycaster();
 raycaster.camera = camera;
-//raycaster.far = 0.5; //determines ray length? check for THREE.js docs not enable3d
+let raycastDistance = 1.5; //use this for setting raycaster.far
+//raycaster.far = 1; //determines ray length? check for THREE.js docs not enable3d
 
 
 //necessary for physics stuff and enable3d whatnots.
@@ -257,6 +258,19 @@ const closest = () => {
     raycaster.destroy();
 }*/
 
+const closest = () => {
+    const rc = this.physics.add.raycaster('closest');
+
+    rc.setRayFromWorld(camera.position);
+    var pos = new THREE.Vector3;
+    pos.x = 0;
+    pos.y = 0;
+    pos.z = raycastDistance;
+    rc.setRayToWorld(camera.position - pos);
+    rc.rayTest();
+
+    rc.destroy();
+}
 
 function animate() {
     //rotato cube
@@ -319,15 +333,20 @@ function handleInput(){
             case "w":
             case "ArrowUp":
                 //cube.position.x += 0.1;
-                //camera.position.z -= 0.1;
-                raycastCheck();
-                camera.translateZ(-0.1);
+               // camera.position.z -= 0.1;
+                if(!raycastCheck(true)){
+                    camera.translateZ(-0.1);
+                }
+                
             break;
 
             case "s":
             case "ArrowDown":
                 //camera.position.z += 0.1;
-                camera.translateZ(0.1);
+                if(!raycastCheck(false)){
+                    camera.translateZ(0.1);
+                }
+                
             break;
 
             case "a":
@@ -348,11 +367,26 @@ function handleInput(){
     checkCameraDifference();
 }
 
-function raycastCheck(){
+function raycastCheck(isForward){
     var returnValue = false;
-    raycaster.set(camera.position, camera.getWorldDirection);
+    //raycaster.set(camera.position, camera.getWorldDirection);
+   // var targetpos = camera.position.copy;
+   // targetpos.z -= 1;
+    var zero = new THREE.Vector2();
+    zero.x = 0;
+    zero.y = 0;
+    if(isForward){
+        raycaster.far = raycastDistance;
+    }else{
+        raycaster.far = raycastDistance * -1;
+    }
+   // raycaster.setFromCamera(zero, camera);
+    raycaster.set(camera.position.copy, camera.getWorldDirection());
     const intersects = raycaster.intersectObjects(scene.children);
     console.log(intersects);
+    if(intersects.length > 0){
+        returnValue = true;
+    }
     return returnValue;
 }
 
