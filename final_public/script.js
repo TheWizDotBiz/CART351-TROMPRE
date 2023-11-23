@@ -140,7 +140,8 @@ camera.position.y = 2;
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
 const raycaster = new THREE.Raycaster();
 raycaster.camera = camera;
-let raycastDistance = 1.5; //use this for setting raycaster.far
+let raycastDistance = 2; //use this for setting raycaster.far
+raycaster.far = raycastDistance;
 //raycaster.far = 1; //determines ray length? check for THREE.js docs not enable3d
 
 
@@ -367,6 +368,18 @@ function handleInput(){
     checkCameraDifference();
 }
 
+function raycastCheckBackwards(){
+    var returnValue = false;
+    var BACK = new THREE.Vector3(0, 0, -1);
+    raycaster.set(camera.position.copy, BACK);
+    const intersects = raycaster.intersectObjects(scene.children);
+    console.log(intersects);
+    if(intersects.length){
+        returnValue = true;
+    }
+    return returnValue;
+}
+
 function raycastCheck(isForward){
     var returnValue = false;
     //raycaster.set(camera.position, camera.getWorldDirection);
@@ -375,13 +388,18 @@ function raycastCheck(isForward){
     var zero = new THREE.Vector2();
     zero.x = 0;
     zero.y = 0;
-    if(isForward){
-        raycaster.far = raycastDistance;
+    raycaster.setFromCamera(zero, camera);
+    if(!isForward){
+        var oldDir = raycaster.ray.direction;
+        raycaster.ray.direction.z *= -1;
+       // raycaster.far = raycastDistance * 1; //can't tell if this is necessary
+       // raycaster.ray.origin.x += zero.x;
+        
     }else{
-        raycaster.far = raycastDistance * -1;
+        raycaster.far = raycastDistance;
     }
-   // raycaster.setFromCamera(zero, camera);
-    raycaster.set(camera.position.copy, camera.getWorldDirection());
+    //console.log(camera.getWorldDirection);
+  //  raycaster.set(camera.position.copy, camera.getWorldDirection);
     const intersects = raycaster.intersectObjects(scene.children);
     console.log(intersects);
     if(intersects.length > 0){
