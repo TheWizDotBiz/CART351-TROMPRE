@@ -143,7 +143,33 @@ raycaster.camera = camera;
 let raycastDistance = 2; //use this for setting raycaster.far
 raycaster.far = raycastDistance;
 //raycaster.far = 1; //determines ray length? check for THREE.js docs not enable3d
+let falling = false; //used for raycast-based physics
+let room;
 
+function loadWizard(wizard){ //wizard should come from localPLayerList
+    console.log("loading a wizard");
+    loader.load('models/wizard.glb', function(gltf){
+        //thisWizard.add(gltf.scene);
+
+        var obj = gltf.scene;
+       // console.log(gltf.scene.children[0]);
+        scene.add(obj);
+        obj.position.x = wizard.x;
+        obj.position.y = wizard.y;
+        obj.position.z = wizard.z;
+        obj.rotation.y = wizard.r;
+        obj.name = wizard.id;
+        obj.disableRaycast = true;
+        obj.layers.set(1);
+        wizardList.push(obj);
+        console.log("new wizard with id " + obj.name);
+        //gltf.scene.mesh[0].position.x = wizard.x;
+
+    }, undefined, function(error){
+        console.error(error);
+    })
+
+}
 
 //necessary for physics stuff and enable3d whatnots.
 const MainScene = () => {
@@ -169,7 +195,7 @@ camera.position.z = 5;
 camera.position.y = 2;
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
 
-loader.load('models/room.glb', function(gltf){
+room = loader.load('models/room.glb', function(gltf){
     scene.add(gltf.scene);
     physics.add.existing(gltf.scene, { shape: 'convex'});
     gltf.scene.body.setCollisionFlags(1); //set to kinematic
@@ -179,28 +205,7 @@ loader.load('models/room.glb', function(gltf){
     console.error(error);
 });
 
-function loadWizard(wizard){ //wizard should come from localPLayerList
-    console.log("loading a wizard");
-    loader.load('models/wizard.glb', function(gltf){
-        //thisWizard.add(gltf.scene);
 
-        var obj = gltf.scene;
-       // console.log(gltf.scene.children[0]);
-        scene.add(obj);
-        obj.position.x = wizard.x;
-        obj.position.y = wizard.y;
-        obj.position.z = wizard.z;
-        obj.rotation.y = wizard.r;
-        obj.name = wizard.id;
-        wizardList.push(obj);
-        console.log("new wizard with id " + obj.name);
-        //gltf.scene.mesh[0].position.x = wizard.x;
-
-    }, undefined, function(error){
-        console.error(error);
-    })
-
-}
 
 function drawPlayers(){
 
@@ -258,7 +263,7 @@ const closest = () => {
     return returnValue;
     raycaster.destroy();
 }*/
-
+/*
 const closest = () => {
     const rc = this.physics.add.raycaster('closest');
 
@@ -271,7 +276,7 @@ const closest = () => {
     rc.rayTest();
 
     rc.destroy();
-}
+}*/
 
 function animate() {
     //rotato cube
@@ -283,6 +288,8 @@ function animate() {
         physics.update(clock.getDelta() * 1000);
         physics.updateDebugger();
         handleInput();
+        handleGravity();
+        
         renderer.render( scene, camera );
     }
     animate();
@@ -335,7 +342,7 @@ function handleInput(){
             case "ArrowUp":
                 //cube.position.x += 0.1;
                // camera.position.z -= 0.1;
-                if(!raycastCheck(true)){
+                if(!altRaycastCheck(0)){ //was !raycastCheck(true)
                     camera.translateZ(-0.1);
                 }
                 
@@ -344,7 +351,7 @@ function handleInput(){
             case "s":
             case "ArrowDown":
                 //camera.position.z += 0.1;
-                if(!raycastCheck(false)){
+                if(!altRaycastCheck(1)){ //was !raycastCheck(false)
                     camera.translateZ(0.1);
                 }
                 
@@ -352,12 +359,24 @@ function handleInput(){
 
             case "a":
             case "ArrowLeft":
-                camera.rotation.y += 0.05;
+                if(inputList.includes("Alt")){ //scuffed as shit due to how browsers work but technically works
+                    if(!altRaycastCheck(3)){
+                        camera.translateX(-0.1);
+                    }
+                }else{
+                    camera.rotation.y += 0.05;
+                }
             break;
 
             case "d":
             case "ArrowRight":
-                camera.rotation.y -= 0.05;
+                if(inputList.includes("Alt")){
+                    if(!altRaycastCheck(2)){
+                        camera.translateX(0.1);
+                    }
+                }else{
+                    camera.rotation.y -= 0.05;
+                }
             break;
             default:
                 console.log("no handleInput case for key " + inputList[i]);
@@ -382,6 +401,20 @@ function raycastCheckBackwards(){
 
 function raycastCheck(isForward){
     var returnValue = false;
+
+    //witchcraft from the three.js discord
+    
+    var q = new THREE.Quaternion();
+    camera.getWorldQuaternion(q);
+    var forward = new THREE.Vector3(0,0,-1).applyQuaternion(q) ;
+    //forward.y = 0 ;
+    forward.normalize();
+
+    var backward = new THREE.Vector3(0,0,1).applyQuaternion(q);
+    //backward.y = 0;
+    backward.normalize();
+
+    
     //raycaster.set(camera.position, camera.getWorldDirection);
    // var targetpos = camera.position.copy;
    // targetpos.z -= 1;
@@ -389,14 +422,17 @@ function raycastCheck(isForward){
     zero.x = 0;
     zero.y = 0;
     raycaster.setFromCamera(zero, camera);
+    raycaster.far = raycastDistance;
     if(!isForward){
-        var oldDir = raycaster.ray.direction;
-        raycaster.ray.direction.z *= -1;
+       // var oldDir = raycaster.ray.direction;
+        raycaster.ray.direction.z *= -2;
+      //  raycaster.ray.origin.z = backward;
        // raycaster.far = raycastDistance * 1; //can't tell if this is necessary
        // raycaster.ray.origin.x += zero.x;
         
     }else{
         raycaster.far = raycastDistance;
+       // raycaster.ray.origin.z = forward;
     }
     //console.log(camera.getWorldDirection);
   //  raycaster.set(camera.position.copy, camera.getWorldDirection);
@@ -405,6 +441,60 @@ function raycastCheck(isForward){
     if(intersects.length > 0){
         returnValue = true;
     }
+    return returnValue;
+}
+
+function altRaycastCheck(callDir){
+    let returnValue = false;
+    let q = new THREE.Quaternion();
+    camera.getWorldQuaternion(q);
+    let p = new THREE.Vector3();
+    camera.getWorldPosition(p);
+    switch(callDir){
+        case 0: //forward
+        let forward = new THREE.Vector3(0,0,-1).applyQuaternion(q);
+        forward.normalize();
+        raycaster.set(p, forward);
+        break;
+        case 1: //backwards
+        let backward = new THREE.Vector3(0,0,1).applyQuaternion(q);
+        backward.normalize();
+        raycaster.set(p, backward);
+        break;
+        case 2: //right
+        let right = new THREE.Vector3(1,0,0).applyQuaternion(q);
+        raycaster.set(p, right);
+        break;
+        case 3: //left
+        let left = new THREE.Vector3(-1,0,0).applyQuaternion(q);
+        raycaster.set(p, left);
+        break;
+        case 4: //below
+        let below = new THREE.Vector3(0, -1, 0).applyQuaternion(q);
+        raycaster.set(p, below);
+        break;
+    }
+
+    //return all scene children that lack the disableRaycast property into an array to be raycasted
+    //see here https://stackoverflow.com/questions/54293528/three-object3d-how-to-disable-raycast-for-object-not-material
+    /*
+    let raycastList = [];
+    scene.traverse(c =>{
+        if(c.isMesh && !c.disableRaycast){
+            raycastList.push(c);
+        }else{
+            console.log(c.name + " disableRaycast is " + c.disableRaycast);
+        }
+    })*/
+    raycaster.layers.set(0); //FIX THIS!!!
+    var intersects = raycaster.intersectObjects(scene.children); //was scene.children
+    //var intersects = raycaster.raycastObjects(raycastList);
+    
+    console.log(intersects);
+    if(intersects.length > 0){
+        returnValue = true;
+    }
+
     return returnValue;
 }
 
@@ -422,12 +512,24 @@ function checkCameraDifference(){
 
     if(change){
       //  console.log("cameras are different!");
+      if(!altRaycastCheck(4)){
+        falling = true;
+      }
         clientSocket.emit("updatePlayerPosServer", camera.position.x, camera.position.y - 1.75, camera.position.z, socketId, camera.rotation.y + 1.55);
     }
 
     cameraPos = thisCamPos;
 }
 
-
+function handleGravity(){ //this only manages local player's gravity.
+    if(falling){
+        if(!altRaycastCheck(4)){
+            camera.translateY(-0.1);
+        }else{
+            falling = false;
+        }
+    }
+    
+}
 
 
