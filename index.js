@@ -25,7 +25,8 @@ app.get('/', function(req, res){
 
 //import wizard from './final_public/obj/wizard';
 let playerList = []; //store playerInfo
-
+//let colorList = ["red", "blue", "green", "yellow", "white", "purple", "orange"]; //store color names;
+let colorCount = 6;
 httpServer.listen(portNumber, function(){
     console.log('listening on port:: '+portNumber);
   })
@@ -51,8 +52,8 @@ io.on('connect', function(socket){
                 console.log("splice!");
             }
         }
-        
-            playerList.push(new playerInfo(0,0,0,"#F28C28", data, 0));
+            let rand = Math.floor(Math.random() * colorCount); //generates a random colorID;
+            playerList.push(new playerInfo(0,0,0,rand, data, 0));
             console.log("player count " + playerList.length + " user count " + io.engine.clientsCount);
             io.emit('updateWizardCount', playerList);
             io.emit('updatePlayerFromServer', playerList);
@@ -73,6 +74,15 @@ io.on('connect', function(socket){
         }
         console.log("playerList contains " + playerList);
         io.emit('updatePlayerFromServer', playerList);
+    })
+
+    socket.on('sendMessage', function(thisID, message){
+            io.emit('receiveMessageFromServer', thisID, message);
+    })
+
+    socket.on('removeMessage', function(thisID){
+        console.log("removing message from player " + thisID);
+        io.emit('deleteMessageFromServer', thisID);
     })
 
     socket.on('disconnect', function(data){
@@ -97,5 +107,6 @@ class playerInfo{
         this.color = color;
         this.id = id;
         this.r = r;
+        this.message = "";
     }
 }

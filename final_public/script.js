@@ -8,6 +8,9 @@ const { AmmoPhysics, PhysicsLoader } = ENABLE3D;
 import { GLTFLoader } from "three/addons/GLTFLoader.js";
 import { OrbitControls } from "three/addons/OrbitControls.js";
 import { FirstPersonControls } from "three/addons/FirstPersonControls.js";
+import { FontLoader } from "/three/examples/jsm/loaders/FontLoader.js";
+import { TextGeometry } from "/three/examples/jsm/geometries/TextGeometry.js";
+import { TTFLoader } from "/three/examples/jsm/loaders/TTFLoader.js";
 //import { PhysicsLoader } from "enable3d";
 //import { Scene3D } from "enable3d/dist/scene3d.js";
 
@@ -131,6 +134,43 @@ function runOnceConnected(){
             }
         }
     })
+
+    clientSocket.on('receiveMessageFromServer', function(playerID, message){
+        if(playerID == socketId){
+            MessageTimer = 8;
+            console.log("this is your message!");
+        }else{
+            //cleanup existing message from that player
+            for(var j = 0; j < messageList.length; j++){
+                if(messageList[j].parentPlayer == playerID){
+                    scene.remove(messageList[j]);
+                    messageList.splice(j, 1);
+                }
+            }
+
+            var targetPlayer;
+            for(var i = 0; i < wizardList.length; i++){
+                if(wizardList[i].name == playerID){
+                    targetPlayer = wizardList[i];
+                    i = wizardList.length;
+                }
+            }
+            newDrawText(targetPlayer, message);
+        }
+    })
+
+    clientSocket.on('deleteMessageFromServer', function(thisID){
+        console.log("running deleteMessageFromServer for ID " + thisID);
+        for(var i = 0; i < messageList.length; i++){
+            if(messageList[i].parentPlayer == thisID){
+                console.log("message found! deleting...");
+                scene.remove(messageList[i]);
+                messageList.splice(i, 1);
+                console.log(messageList);
+            }
+        }
+    })
+    setInterval(handleMessageTimer, 1000);
 }
 
 const scene = new THREE.Scene();
@@ -145,6 +185,12 @@ raycaster.far = raycastDistance;
 //raycaster.far = 1; //determines ray length? check for THREE.js docs not enable3d
 let falling = false; //used for raycast-based physics
 let room;
+let roomCol; //stores GLTF.scene from room instantiation
+//RED, BLUE, GREEN, YELLOW, WHITE, PURPLE, ORANGE
+let colorList = ['rgb(255, 0, 0)', 'rgb(0, 0, 255)', 'rgb(0, 255, 0)', 'rgb(255, 255, 0)', 'rgb(255, 255 255)', 'rgb(102, 0, 204)', 'rgb(255, 153, 0)'];
+let testcolor = new THREE.MeshBasicMaterial({color: 'red'});
+let newTestColor = new THREE.Color("rgb(255, 0, 0)");
+//let roomRaycastGroup = new THREE.Group();
 
 function loadWizard(wizard){ //wizard should come from localPLayerList
     console.log("loading a wizard");
@@ -159,8 +205,26 @@ function loadWizard(wizard){ //wizard should come from localPLayerList
         obj.position.z = wizard.z;
         obj.rotation.y = wizard.r;
         obj.name = wizard.id;
+       // obj.material.color.set(colorList[wizard.color]);
+       //set color of all objects in mesh
+       console.log('color id is ' + wizard.color);
+        obj.traverse((object) => {
+            if(object.isMesh){
+                //object.material.color.set(colorList[wizard.color]);
+               // object.material = testcolor; //works but turns everything flat red
+             //  object.material.color.set(newTestColor);
+              // object.material.color.setRGB(255, 0 ,0);
+                // object.material.color.setHSL(0, 1, .5);
+              
+              //object.material.color = (newTestColor);
+              var mat = object.material.clone();
+              mat.color.setRGB(1, 0, 0);
+              object.material = mat;
+              //console.log("material is " + mat.color.r);
+            }
+        })
         obj.disableRaycast = true;
-        obj.layers.set(1);
+       // obj.layers.set(1);
         wizardList.push(obj);
         console.log("new wizard with id " + obj.name);
         //gltf.scene.mesh[0].position.x = wizard.x;
@@ -170,6 +234,60 @@ function loadWizard(wizard){ //wizard should come from localPLayerList
     })
 
 }
+
+//3d text nonsense
+//https://www.youtube.com/watch?v=l7K9AMnesJQ
+const fontLoader = new FontLoader();
+const ttfLoader = new TTFLoader();
+let RSFont;
+let messageList = [];
+let MessageTimer = 0;
+let messageYoffset = 3;
+let messageXoffset = 1;
+let typing = false;
+/*
+ttfLoader.load('fonts/runescape_uf.ttf', (json)=> {
+    RSFont = fontLoader.parse(json);
+    const textGeometry = new TextGeometry('hello world', {height: 0.025, size: 0.3, font: RSFont});
+    const textMaterial = new THREE.MeshBasicMaterial();
+    textMaterial.color.setRGB(255, 255, 0);
+    const textMesh = new THREE.Mesh(textGeometry, textMaterial)
+    textMesh.position.x = 1;
+    textMesh.position.y = 1;
+    textMesh.position.z = 1;
+    scene.add(textMesh)
+});
+*/
+function newDrawText(player, message){
+    ttfLoader.load('fonts/runescape_uf.ttf', (json)=> {
+        RSFont = fontLoader.parse(json);
+        const textGeometry = new TextGeometry(message, {height: 0.025, size: 0.3, font: RSFont});
+        const textMaterial = new THREE.MeshBasicMaterial();
+        textMaterial.color.setRGB(255, 255, 0);
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial)
+        textMesh.position.x = player.position.x + messageXoffset;
+        textMesh.position.y = player.position.y + messageYoffset;
+        textMesh.position.z = player.position.z;
+        textMesh.parentPlayer = player.name;
+        textMesh.lifetime = 8;
+        textMesh.message = message;
+        messageList.push(textMesh);
+        scene.add(textMesh)
+    });
+}
+/*
+function drawText(player, message){
+    fontLoader.load(RSFont, (thisFont) =>{
+        const textGeometry = new TextGeometry(message, { height: 0.025, size: 1, font: thisFont});
+        const textMaterial = new THREE.MeshNormalMaterial();
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        textGeometry.position.x = player.position.x;
+        textGeometry.position.y = player.position.y;
+        textGeometry.position.z = player.position.z + 1;
+        messageList.push(textMesh);
+        scene.add(textMesh);
+    })
+}*/
 
 //necessary for physics stuff and enable3d whatnots.
 const MainScene = () => {
@@ -199,12 +317,14 @@ room = loader.load('models/room.glb', function(gltf){
     scene.add(gltf.scene);
     physics.add.existing(gltf.scene, { shape: 'convex'});
     gltf.scene.body.setCollisionFlags(1); //set to kinematic
+    gltf.scene.layers.enable(0);
+    gltf.scene.layers.set(0);
+    roomCol = gltf.scene;
     //after this is completed, the level should have collion, you may then add physics and collision to the camera
     
 }, undefined, function(error){
     console.error(error);
 });
-
 
 
 function drawPlayers(){
@@ -278,6 +398,8 @@ const closest = () => {
     rc.destroy();
 }*/
 
+//drawText(wizardList[0], "hello world");
+//newDrawText(wizardList[0], 'Player Text!');
 function animate() {
     //rotato cube
         requestAnimationFrame( animate ); //this requests the animate() function to be ran next frame, this is why you always call it first at the beginning of animate(), so animate is ran again.
@@ -289,7 +411,7 @@ function animate() {
         physics.updateDebugger();
         handleInput();
         handleGravity();
-        
+        forceTextToLookAtCam();
         renderer.render( scene, camera );
     }
     animate();
@@ -377,6 +499,22 @@ function handleInput(){
                 }else{
                     camera.rotation.y -= 0.05;
                 }
+            break;
+
+            case " ":
+              //  newDrawText(wizardList[0], "spacebar!");
+              clientSocket.emit('sendMessage', socketId, "sent a message here!");
+            break;
+
+            case "t":
+            case "y":
+            case "Enter":
+                    console.log("chatting...");
+                    let chatMessage = prompt("say:");
+                    if(chatMessage.length > 0){
+                        clientSocket.emit('sendMessage', socketId, chatMessage);
+                    }
+                    inputList.splice(i, 1);
             break;
             default:
                 console.log("no handleInput case for key " + inputList[i]);
@@ -487,10 +625,11 @@ function altRaycastCheck(callDir){
         }
     })*/
     raycaster.layers.set(0); //FIX THIS!!!
-    var intersects = raycaster.intersectObjects(scene.children); //was scene.children
+    var intersects = raycaster.intersectObject(roomCol); //was scene.children
     //var intersects = raycaster.raycastObjects(raycastList);
     
-    console.log(intersects);
+    //console.log(intersects);
+    
     if(intersects.length > 0){
         returnValue = true;
     }
@@ -532,4 +671,47 @@ function handleGravity(){ //this only manages local player's gravity.
     
 }
 
+function forceTextToLookAtCam(){
+    //console.log("running forceTextToLookAtCam");
+   // console.log(messageList);
+    for(var i = 0; i < messageList.length; i++){
+      //  console.log("message " + i);
+        messageList[i].lookAt(camera.position);
+        //retrieve parent player position
+        for(var j = 0; j < wizardList.length; j++){
+            if(messageList[i].parentPlayer == wizardList[j].name){
+                var newXoffset = messageXoffset;
+                if(camera.position.z >= wizardList[j].position.z){
+                    newXoffset *= -1;
+                }
+                messageList[i].position.x = wizardList[j].position.x + newXoffset;
+                messageList[i].position.y = wizardList[j].position.y + messageYoffset;
+                messageList[i].position.z = wizardList[j].position.z;
+            }else{
+                scene.remove(messageList[i]);
+                messageList.splice(i, 1);
+            }
+        }
+    }
+}
 
+function handleMessageTimer(){ //makes it so your chat bubble goes away after 10 seconds.
+    /*
+    console.log("running handleMessageTimer! value is at " + MessageTimer);
+    if(MessageTimer > 0){
+        MessageTimer--;
+        if(MessageTimer == 0){
+            console.log("sending removeMessage...");
+            clientSocket.emit('removeMessage', socketId);
+        }
+    }
+*/
+    //new code where messageList items track their own lifetime values
+    for(var i = 0; i < messageList.length; i++){
+        messageList[i].lifetime--;
+        if(messageList[i].lifetime <= 0){
+            scene.remove(messageList[i]);
+            messageList.splice(i,1);
+        }
+    }
+}
