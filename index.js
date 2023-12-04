@@ -9,6 +9,7 @@ let clientIncrementing =0;
 
 // serving static files
 let static = require('node-static'); // for serving static files (i.e. css,js,html...)
+const { measureMemory } = require('vm');
 // serve anything from this dir ...
 app.use(express.static(__dirname + '/final_public'));
 // for the client...
@@ -22,6 +23,10 @@ app.get('/', function(req, res){
   app.get('/client', function(req, res) {
     res.sendFile(__dirname + '/final_public/index.html');
 });
+
+app.get('/death', function(req, res){
+    res.sendFile(__dirname + '/final_public/death.html');
+})
 
 //import wizard from './final_public/obj/wizard';
 let playerList = []; //store playerInfo
@@ -76,13 +81,22 @@ io.on('connect', function(socket){
         io.emit('updatePlayerFromServer', playerList);
     })
 
-    socket.on('sendMessage', function(thisID, message){
-            io.emit('receiveMessageFromServer', thisID, message);
+    socket.on('sendMessage', function(thisID, message, colorID){
+        if(checkIfSpell(message, colorID, thisID)){
+            io.emit('receiveMessageFromServer', thisID, message, true);
+        }else{
+            io.emit('receiveMessageFromServer', thisID, message, false);
+        }
+           
     })
 
     socket.on('removeMessage', function(thisID){
         console.log("removing message from player " + thisID);
         io.emit('deleteMessageFromServer', thisID);
+    })
+
+    socket.on('killPlayer', function(playerID){
+        io.emit('Suicide', playerID);
     })
 
     socket.on('disconnect', function(data){
@@ -97,7 +111,69 @@ io.on('connect', function(socket){
     })
 })
 
-
+//COLOR NAMES ["red", "blue", "green", "yellow", "white", "purple", "orange"]; //store color names;
+// ISHU, MORA, TIMYAER, YELLER, SUUTNOLK, NULN, RAGGAH
+let colorNames = ['ishu', 'mora', 'timyaer', 'yeller', 'suutnolk', 'nuln', 'raggah'];
+//TELEPORT TO RANDOM ROOM, CHANGE TO RANDOM COLOR, LEVITATE, SUICIDE, KILL ALL AROUND, SUPER SPEED
+let spellNames = ['tsur-nayek', 'nihilith kha', 'oesurnavigg', 'rush hour 3', 'addarasarmarvartuliik', 'sigivael-faroth', 'htoraf-leavigis'];
+function checkIfSpell(message, colorID, playerID){
+    var returnIfSpell = false;
+    var msgTracker = "";
+    var prefix = colorNames[colorID];
+    var prefixCorrect = false;
+    for(var i  = 0; i < message.length; i++){
+        msgTracker = msgTracker + message[i];
+        if(!prefixCorrect){
+            var msgtemp = msgTracker.toUpperCase();
+            console.log("prefix is " + prefix);
+            var prefixtemp = prefix.toUpperCase();
+            if(msgtemp == prefixtemp + " "){ //toUpperCase() is to prevent case sensitive comparision, this checks for correct color prefix
+                console.log("prefix  is correct");
+                msgTracker = "";
+                prefixCorrect = true;
+            }
+        }else{ //check for suffix
+            //console.log("msgtracks is " + msgTracker.toUpperCase() + " spell one is " + spellNames[0].toUpperCase());
+            switch(msgTracker.toUpperCase()){
+                case spellNames[0].toUpperCase()://teleport to random room
+                    returnIfSpell = true;
+                    i = message.length;
+                break;
+                case spellNames[1].toUpperCase()://Change to random color
+                    returnIfSpell = true;
+                    i = message.length;
+                break;
+                case spellNames[2].toUpperCase()://Levitate
+                    returnIfSpell = true;
+                    i = message.length;
+                break;
+                case spellNames[3].toUpperCase():
+                    returnIfSpell = true;
+                    i = message.length;
+                    io.emit('Suicide', playerID);
+                break;
+                case spellNames[4].toUpperCase():
+                    returnIfSpell = true;
+                    i = message.length;
+                    io.emit('DeathSpell', playerID);
+                break;
+                case spellNames[5].toUpperCase():
+                    returnIfSpell = true;
+                    i = message.length;
+                    io.emit('Haste', playerID);
+                break;
+                case spellNames[6].toUpperCase():
+                    returnIfSpell = true;
+                    i = message.length;
+                    io.emit('Slow', playerID);
+                break;
+            }
+        }
+        
+    }
+    console.log(message + " spell status is " + returnIfSpell);
+    return returnIfSpell;
+}
 
 class playerInfo{
     constructor(x, y, z, color, id, r){

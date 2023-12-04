@@ -38,6 +38,7 @@ let clientSocket = io_socket.connect('http://localhost:4200');
 let socketId = -1;
 let localPlayerList = [];
 let wizardList = []; //holds the wizard objects for players.
+let myColorID;
 
 clientSocket.on("connect", function(data){
     console.log("connected");
@@ -91,10 +92,15 @@ function runOnceConnected(){
                 wizardList[j].position.y = data[i].y;
                 wizardList[j].position.z = data[i].z;
                 wizardList[j].rotation.y = data[i].r;
+                wizardList[j].color = data[i].color;
             }
         }
         if(exists == false && data[i].id != socketId){
             loadWizard(data[i]);
+        }
+
+        if(data[i].id == socketId){
+            myColorID = data[i].color;
         }
       }
 
@@ -104,6 +110,7 @@ function runOnceConnected(){
          //   console.log("you should now be invis!");
             wizardList[l].visible = false;
             l = wizardList.length;
+            myColorID = wizardList[l].color;
         }
      }
 
@@ -135,7 +142,7 @@ function runOnceConnected(){
         }
     })
 
-    clientSocket.on('receiveMessageFromServer', function(playerID, message){
+    clientSocket.on('receiveMessageFromServer', function(playerID, message, isSpell){
         if(playerID == socketId){
             MessageTimer = 8;
             console.log("this is your message!");
@@ -155,7 +162,13 @@ function runOnceConnected(){
                     i = wizardList.length;
                 }
             }
-            newDrawText(targetPlayer, message);
+
+            if(isSpell){
+                newDrawSpellText(targetPlayer, message);
+            }else{
+                newDrawText(targetPlayer, message);
+            }
+            
         }
     })
 
@@ -168,6 +181,31 @@ function runOnceConnected(){
                 messageList.splice(i, 1);
                 console.log(messageList);
             }
+        }
+    })
+
+    clientSocket.on('Haste', function(playerID){
+        console.log("running hast spell on player " + playerID);
+        if(playerID == socketId){
+            speed *= 10;
+        }
+    })
+
+    clientSocket.on('Slow', function(playerID){
+        if(playerID == socketId){
+            speed /= 10;
+        }
+    })
+
+    clientSocket.on("Suicide", function(playerID){
+        if(playerID == socketId){
+            window.location.href = 'http://localhost:4200/death'
+        }
+    })
+
+    clientSocket.on("DeathSpell", function(playerID){
+        if(playerID == socketId){
+            deathSpell();
         }
     })
     setInterval(handleMessageTimer, 1000);
@@ -205,9 +243,11 @@ function loadWizard(wizard){ //wizard should come from localPLayerList
         obj.position.z = wizard.z;
         obj.rotation.y = wizard.r;
         obj.name = wizard.id;
+        obj.colorID = wizard.color;
        // obj.material.color.set(colorList[wizard.color]);
        //set color of all objects in mesh
        console.log('color id is ' + wizard.color);
+       /*
         obj.traverse((object) => {
             if(object.isMesh){
                 //object.material.color.set(colorList[wizard.color]);
@@ -222,7 +262,7 @@ function loadWizard(wizard){ //wizard should come from localPLayerList
               object.material = mat;
               //console.log("material is " + mat.color.r);
             }
-        })
+        })*/
         obj.disableRaycast = true;
        // obj.layers.set(1);
         wizardList.push(obj);
@@ -274,6 +314,25 @@ function newDrawText(player, message){
         messageList.push(textMesh);
         scene.add(textMesh)
     });
+}
+
+function newDrawSpellText(player, message){
+    console.log("drawing spell text...");
+    ttfLoader.load('fonts/38649_TSOLYANI.ttf', (json) =>{
+        RSFont = fontLoader.parse(json);
+        const textGeometry = new TextGeometry(message, {height: 0.025, size: 0.3, font: RSFont});
+        const textMaterial = new THREE.MeshBasicMaterial();
+        textMaterial.color.setRGB(255, 0, 255);
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial)
+        textMesh.position.x = player.position.x + messageXoffset;
+        textMesh.position.y = player.position.y + messageYoffset;
+        textMesh.position.z = player.position.z;
+        textMesh.parentPlayer = player.name;
+        textMesh.lifetime = 8;
+        textMesh.message = message;
+        messageList.push(textMesh);
+        scene.add(textMesh)
+    })
 }
 /*
 function drawText(player, message){
@@ -424,6 +483,7 @@ PhysicsLoader('lib/ammo/kripken', () => MainScene());
 document.addEventListener("keydown", Keyinput);
 document.addEventListener("keyup", keyUp);
 let inputList = new Array(); 
+let speed = 0.1;
 
 
 //TAKES in the iput by reading keys
@@ -465,7 +525,7 @@ function handleInput(){
                 //cube.position.x += 0.1;
                // camera.position.z -= 0.1;
                 if(!altRaycastCheck(0)){ //was !raycastCheck(true)
-                    camera.translateZ(-0.1);
+                    camera.translateZ(speed * -1);
                 }
                 
             break;
@@ -474,7 +534,7 @@ function handleInput(){
             case "ArrowDown":
                 //camera.position.z += 0.1;
                 if(!altRaycastCheck(1)){ //was !raycastCheck(false)
-                    camera.translateZ(0.1);
+                    camera.translateZ(speed);
                 }
                 
             break;
@@ -483,7 +543,7 @@ function handleInput(){
             case "ArrowLeft":
                 if(inputList.includes("Alt")){ //scuffed as shit due to how browsers work but technically works
                     if(!altRaycastCheck(3)){
-                        camera.translateX(-0.1);
+                        camera.translateX(speed * -1);
                     }
                 }else{
                     camera.rotation.y += 0.05;
@@ -494,7 +554,7 @@ function handleInput(){
             case "ArrowRight":
                 if(inputList.includes("Alt")){
                     if(!altRaycastCheck(2)){
-                        camera.translateX(0.1);
+                        camera.translateX(speed);
                     }
                 }else{
                     camera.rotation.y -= 0.05;
@@ -503,7 +563,8 @@ function handleInput(){
 
             case " ":
               //  newDrawText(wizardList[0], "spacebar!");
-              clientSocket.emit('sendMessage', socketId, "sent a message here!");
+              //clientSocket.emit('sendMessage', socketId, "sent a message here!", myColorID);
+              console.log("my color ID is " + myColorID);
             break;
 
             case "t":
@@ -512,7 +573,7 @@ function handleInput(){
                     console.log("chatting...");
                     let chatMessage = prompt("say:");
                     if(chatMessage.length > 0){
-                        clientSocket.emit('sendMessage', socketId, chatMessage);
+                        clientSocket.emit('sendMessage', socketId, chatMessage, myColorID);
                     }
                     inputList.splice(i, 1);
             break;
@@ -712,6 +773,20 @@ function handleMessageTimer(){ //makes it so your chat bubble goes away after 10
         if(messageList[i].lifetime <= 0){
             scene.remove(messageList[i]);
             messageList.splice(i,1);
+        }
+    }
+}
+
+function deathSpell(){
+    let myPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+    for(var i = 0; i < wizardList.length; i++){
+        if(wizardList[i].name != socketId){
+            var targetPos = new THREE.Vector3(wizardList[i].x, wizardList[i].y, wizardList[i].z);
+            var dist = myPos.distanceTo(targetPos);
+            console.log("distance is " + dist);
+            if(dist <= 8){
+                clientSocket.emit('killPlayer', wizardList[i].name);
+            }
         }
     }
 }
