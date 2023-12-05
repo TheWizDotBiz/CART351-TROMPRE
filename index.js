@@ -115,7 +115,7 @@ io.on('connect', function(socket){
 // ISHU, MORA, TIMYAER, YELLER, SUUTNOLK, NULN, RAGGAH
 let colorNames = ['ishu', 'mora', 'timyaer', 'yeller', 'suutnolk', 'nuln', 'raggah'];
 //TELEPORT TO RANDOM ROOM, CHANGE TO RANDOM COLOR, LEVITATE, SUICIDE, KILL ALL AROUND, SUPER SPEED
-let spellNames = ['tsur-nayek', 'nihilith kha', 'oesurnavigg', 'rush hour 3', 'addarasarmarvartuliik', 'sigivael-faroth', 'htoraf-leavigis'];
+let spellNames = ['tsur-nayek', 'nihilith kha', 'oesurnavigg', 'rush hour 3', 'addarasarmarvartuliik', 'sigivael-faroth', 'htoraf-leavigis', "gnorolgur'mok", 'nath-shu'];
 function checkIfSpell(message, colorID, playerID){
     var returnIfSpell = false;
     var msgTracker = "";
@@ -138,14 +138,17 @@ function checkIfSpell(message, colorID, playerID){
                 case spellNames[0].toUpperCase()://teleport to random room
                     returnIfSpell = true;
                     i = message.length;
+                    //we need actual geometry to be able to code this lol
                 break;
                 case spellNames[1].toUpperCase()://Change to random color
                     returnIfSpell = true;
                     i = message.length;
+                  //  io.emit('ChangeColors', playerID); //this spell is deprecated
                 break;
                 case spellNames[2].toUpperCase()://Levitate
                     returnIfSpell = true;
                     i = message.length;
+                    io.emit('Levitate', playerID);
                 break;
                 case spellNames[3].toUpperCase():
                     returnIfSpell = true;
@@ -157,6 +160,43 @@ function checkIfSpell(message, colorID, playerID){
                     i = message.length;
                     io.emit('DeathSpell', playerID);
                 break;
+                //selective death spells begin
+                    case spellNames[8].toUpperCase() + " " + colorNames[0].toUpperCase():
+                        returnIfSpell = true;
+                        i = message.length;
+                        io.emit('SelectiveDeathSpell', playerID, 0);
+                    break;
+                    case spellNames[8].toUpperCase() + " " + colorNames[1].toUpperCase():
+                        returnIfSpell = true;
+                        i = message.length;
+                        io.emit('SelectiveDeathSpell', playerID, 1);
+                    break;
+                    case spellNames[8].toUpperCase() + " " + colorNames[2].toUpperCase():
+                        returnIfSpell = true;
+                        i = message.length;
+                        io.emit('SelectiveDeathSpell', playerID, 2);
+                    break;
+                    case spellNames[8].toUpperCase() + " " + colorNames[3].toUpperCase():
+                        returnIfSpell = true;
+                        i = message.length;
+                        io.emit('SelectiveDeathSpell', playerID, 3);
+                    break;
+                    case spellNames[8].toUpperCase() + " " + colorNames[4].toUpperCase():
+                        returnIfSpell = true;
+                        i = message.length;
+                        io.emit('SelectiveDeathSpell', playerID, 4);
+                    break;
+                    case spellNames[8].toUpperCase() + " " + colorNames[5].toUpperCase():
+                        returnIfSpell = true;
+                        i = message.length;
+                        io.emit('SelectiveDeathSpell', playerID, 5);
+                    break;
+                    case spellNames[8].toUpperCase() + " " + colorNames[6].toUpperCase():
+                        returnIfSpell = true;
+                        i = message.length;
+                        io.emit('SelectiveDeathSpell', playerID, 6);
+                    break;
+                //selective death spells end
                 case spellNames[5].toUpperCase():
                     returnIfSpell = true;
                     i = message.length;
@@ -166,6 +206,11 @@ function checkIfSpell(message, colorID, playerID){
                     returnIfSpell = true;
                     i = message.length;
                     io.emit('Slow', playerID);
+                break;
+                case spellNames[7].toUpperCase():
+                    returnIfSpell = true;
+                    i = message.length;
+                    io.emit('Phasing', playerID);
                 break;
             }
         }

@@ -19,7 +19,8 @@ import cube from "./obj/cube.js";
 import wizard from "./obj/wizard.js";
 //gltf stuff to import models
 const loader = new GLTFLoader();
-const wizardModel = await loader.loadAsync('models/wizard.glb');
+//const wizardModel = await loader.loadAsync('models/wizard.glb');
+//const wizardModelR = await loader.loadAsync('models/wizardRed.glb');
 //import { Scene3D } from "enable3d";
 //import { Socket } from "socket.io";
 //import e from "express";
@@ -39,7 +40,8 @@ let socketId = -1;
 let localPlayerList = [];
 let wizardList = []; //holds the wizard objects for players.
 let myColorID;
-
+let wizModelUrls = ['models/wizardRed.glb', 'models/wizardBlue.glb', 'models/wizardGreen.glb', 'models/wizardYellow.glb', 'models/wizard.glb', 'models/wizardPurple.glb', 'models/wizardPurple.glb'];
+let spellSounds = [new Audio('sounds/snd (1).wav'), new Audio('sounds/snd (2).wav'), new Audio('sounds/snd (3).wav'), new Audio('sounds/snd (4).wav'), new Audio('sounds/snd (5).wav'), new Audio('sounds/snd (6).wav'), new Audio('sounds/snd (7).wav')];
 clientSocket.on("connect", function(data){
     console.log("connected");
     //put code here that should only execute once the client is connected
@@ -189,30 +191,61 @@ function runOnceConnected(){
         if(playerID == socketId){
             speed *= 10;
         }
+      //  playSoundOnPlayer(playerID, 0);
+      classicPlaySound(0);
     })
 
     clientSocket.on('Slow', function(playerID){
         if(playerID == socketId){
             speed /= 10;
         }
+        classicPlaySound(1);
     })
 
     clientSocket.on("Suicide", function(playerID){
         if(playerID == socketId){
             window.location.href = 'http://localhost:4200/death'
         }
+        classicPlaySound(2);
     })
 
     clientSocket.on("DeathSpell", function(playerID){
         if(playerID == socketId){
             deathSpell();
         }
+        classicPlaySound(6);
     })
+
+    clientSocket.on("Levitate", function(playerID){
+        if(playerID == socketId){
+            toggleLevitate();
+        }
+        classicPlaySound(3);
+    })
+
+    clientSocket.on("Phasing", function(playerID){
+        if(playerID == socketId){
+            togglePhasing();
+        }
+        classicPlaySound(4);
+    })
+
+    clientSocket.on('SelectiveDeathSpell', function(playerID, colorID){
+        if(playerID == socketId){
+            selectiveDeathSpell(colorID);
+        }
+        classicPlaySound(5);
+    })
+
     setInterval(handleMessageTimer, 1000);
 }
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const audioListener = new THREE.AudioListener();
+const audioLoader = new THREE.AudioLoader();
+const sound = new THREE.PositionalAudio(audioListener);
+camera.add(audioListener);
 camera.position.z = 5;
 camera.position.y = 2;
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
@@ -222,6 +255,7 @@ let raycastDistance = 2; //use this for setting raycaster.far
 raycaster.far = raycastDistance;
 //raycaster.far = 1; //determines ray length? check for THREE.js docs not enable3d
 let falling = false; //used for raycast-based physics
+let climbingGroundValue = 1.835; //if the distance between ground and camera is smaller than this, climb up to simulate going up! done in handleGravity
 let room;
 let roomCol; //stores GLTF.scene from room instantiation
 //RED, BLUE, GREEN, YELLOW, WHITE, PURPLE, ORANGE
@@ -232,7 +266,7 @@ let newTestColor = new THREE.Color("rgb(255, 0, 0)");
 
 function loadWizard(wizard){ //wizard should come from localPLayerList
     console.log("loading a wizard");
-    loader.load('models/wizard.glb', function(gltf){
+    loader.load(wizModelUrls[wizard.color], function(gltf){ //first argument was 'models/wizard.glb'
         //thisWizard.add(gltf.scene);
 
         var obj = gltf.scene;
@@ -282,7 +316,7 @@ const ttfLoader = new TTFLoader();
 let RSFont;
 let messageList = [];
 let MessageTimer = 0;
-let messageYoffset = 3;
+let messageYoffset = 2.5;
 let messageXoffset = 1;
 let typing = false;
 /*
@@ -372,7 +406,7 @@ camera.position.z = 5;
 camera.position.y = 2;
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
 
-room = loader.load('models/room.glb', function(gltf){
+room = loader.load('models/room_v2.glb', function(gltf){
     scene.add(gltf.scene);
     physics.add.existing(gltf.scene, { shape: 'convex'});
     gltf.scene.body.setCollisionFlags(1); //set to kinematic
@@ -484,6 +518,8 @@ document.addEventListener("keydown", Keyinput);
 document.addEventListener("keyup", keyUp);
 let inputList = new Array(); 
 let speed = 0.1;
+let levitate = false;
+let phasing = false;
 
 
 //TAKES in the iput by reading keys
@@ -695,7 +731,41 @@ function altRaycastCheck(callDir){
         returnValue = true;
     }
 
+    if(phasing){
+        if(callDir != 4 && callDir != 5){ //we are eventually going to usxe callDir 5 for upwards vertical movement;
+            returnValue = false;
+        }
+    }
+
     return returnValue;
+}
+
+function elevationRaycastCheck(){
+   // var returnValue = false;
+    let q = new THREE.Quaternion();
+    camera.getWorldQuaternion(q);
+    let p = new THREE.Vector3();
+    camera.getWorldPosition(p);
+
+    let below = new THREE.Vector3(0, -1, 0).applyQuaternion(q);
+    raycaster.set(p, below);
+    raycaster.layers.set(0);
+
+    var intersects = raycaster.intersectObject(roomCol);
+    var dist;
+    if(intersects.length > 0){
+//  console.log("elevation intersects is " + intersects);
+    //get vector3 position of closest raycast collision pooint
+    var v1 = new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+    //vector3 of camera position
+    var v0 = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+    dist = v0.distanceTo(v1);
+    }else{
+        dist = climbingGroundValue;
+    }
+  
+  //  console.log(console.log("distance to ground is " + dist));
+    return dist;
 }
 
 function checkCameraDifference(){
@@ -714,6 +784,8 @@ function checkCameraDifference(){
       //  console.log("cameras are different!");
       if(!altRaycastCheck(4)){
         falling = true;
+      }else{
+      //  elevationRaycastCheck();
       }
         clientSocket.emit("updatePlayerPosServer", camera.position.x, camera.position.y - 1.75, camera.position.z, socketId, camera.rotation.y + 1.55);
     }
@@ -723,13 +795,16 @@ function checkCameraDifference(){
 
 function handleGravity(){ //this only manages local player's gravity.
     if(falling){
-        if(!altRaycastCheck(4)){
+        if(!altRaycastCheck(4) && !levitate){
             camera.translateY(-0.1);
         }else{
             falling = false;
         }
     }
-    
+    var distToGround = elevationRaycastCheck();
+    if(distToGround < climbingGroundValue){
+        camera.translateY(climbingGroundValue - distToGround);
+    }
 }
 
 function forceTextToLookAtCam(){
@@ -789,4 +864,66 @@ function deathSpell(){
             }
         }
     }
+}
+
+function selectiveDeathSpell(colorID){
+    let myPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+    for(var i = 0; i < wizardList.length; i++){
+        if(wizardList[i].name != socketId){
+            var targetPos = new THREE.Vector3(wizardList[i].x, wizardList[i].y, wizardList[i].z);
+            var dist = myPos.distanceTo(targetPos);
+            console.log("distance is " + dist);
+            if(dist <= 8 && wizardList[i].color == colorID){
+                clientSocket.emit('killPlayer', wizardList[i].name);
+            }
+        }
+    }
+}
+
+function toggleLevitate(){
+    if(levitate){
+        levitate = false;
+    }else{
+        levitate = true;
+    }
+}
+
+function togglePhasing(){
+    if(phasing){
+        phasing = false;
+    }else{
+        phasing = true;
+    }
+}
+
+function playSoundOnPlayer(playerID, soundID){
+    //get distance between you and target player 
+
+    var dist;
+    if(playerID == socketId){
+        dist = 1;
+    }else{
+        for(var i = 0; i < wizardList.length; i++){
+            if(playerID == wizardList[i].name){
+                var VC = new THREE.Vector3();
+                camera.getWorldPosition(VC);
+                var VP = new THREE.Vector3(wizardList[i].x, wizardList[i].y, wizardList[i].z);
+                dist = VC.distanceTo(VP);
+            }
+        }
+    }
+    //sound loading
+    var textID = (soundID + 1);
+    audioLoader.load('sounds/snd (' + textID + ').wav', function(buffer){
+        sound.setBuffer(buffer);
+        sound.setLoop(false);
+        sound.setVolume(1);
+        sound.setRefDistance(dist);
+        sound.play();
+    })
+
+}
+
+function classicPlaySound(soundID){
+    spellSounds[soundID].play();
 }
