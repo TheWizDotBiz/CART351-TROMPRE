@@ -392,7 +392,7 @@ const clock = new THREE.Clock();
 scene.add(new THREE.AmbientLight(0xffffff));
 //add physics. Courtesy of Ammo.js?
 const physics = new AmmoPhysics(scene);
-physics.debug.enable(true);
+physics.debug.enable(false);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
