@@ -392,7 +392,7 @@ const clock = new THREE.Clock();
 scene.add(new THREE.AmbientLight(0xffffff));
 //add physics. Courtesy of Ammo.js?
 const physics = new AmmoPhysics(scene);
-physics.debug.enable(false);
+//physics.debug.enable(false);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -443,7 +443,7 @@ const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
 scene.add( cube );
 */
-const TestCube = new cube(1, 1, 1, "#F28C28", scene);
+//const TestCube = new cube(1, 1, 1, "#F28C28", scene);
 //test add physics to cube
 //this.physics.add.existing(TestCube);
 
