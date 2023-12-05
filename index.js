@@ -1,6 +1,7 @@
 //import the Express library
 let express = require('express');
-const portNumber =4200;
+//const portNumber =4200;
+const portNumber = process.env.PORT || 3000;
 let app = express(); //make an instance of express
 let httpServer = require('http').createServer(app);  // create a server (using the Express framework object)
 // declare io which mounts to our httpServer object (runs on top ... )

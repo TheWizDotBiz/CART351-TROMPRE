@@ -35,7 +35,7 @@ window.addEventListener("keydown", function(e) {
 
 //Networking
 let io_socket = io();
-let clientSocket = io_socket.connect('http://localhost:4200');
+let clientSocket = io_socket.connect();
 let socketId = -1;
 let localPlayerList = [];
 let wizardList = []; //holds the wizard objects for players.
@@ -204,7 +204,7 @@ function runOnceConnected(){
 
     clientSocket.on("Suicide", function(playerID){
         if(playerID == socketId){
-            window.location.href = 'http://localhost:4200/death'
+            window.location.href = 'death.html';
         }
         classicPlaySound(2);
     })
@@ -877,6 +877,10 @@ function selectiveDeathSpell(colorID){
                 clientSocket.emit('killPlayer', wizardList[i].name);
             }
         }
+    }
+
+    if(colorID == myColorID){
+        clientSocket.emit('killPlayer', socketId);
     }
 }
 
