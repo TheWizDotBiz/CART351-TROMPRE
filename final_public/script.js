@@ -43,9 +43,6 @@ let wizardList = []; //holds the wizard objects for players.
 let myColorID;
 let wizModelUrls = ['models/wizardRed.glb', 'models/wizardBlue.glb', 'models/wizardGreen.glb', 'models/wizardYellow.glb', 'models/wizard.glb', 'models/wizardPurple.glb', 'models/wizardPurple.glb'];
 let bckgroundMusic = new Audio('sounds/kelethin.mp3');
-window.onload = function(){
-    bckgroundMusic.play();
-};
 let spellSounds = [new Audio('sounds/snd (1).wav'), new Audio('sounds/snd (2).wav'), new Audio('sounds/snd (3).wav'), new Audio('sounds/snd (4).wav'), new Audio('sounds/snd (5).wav'), new Audio('sounds/snd (6).wav'), new Audio('sounds/snd (7).wav')];
 clientSocket.on("connect", function(data){
     console.log("connected");
@@ -531,6 +528,7 @@ PhysicsLoader('lib/ammo/kripken', () => MainScene());
 
 document.addEventListener("keydown", Keyinput);
 document.addEventListener("keyup", keyUp);
+document.addEventListener("click", bckgroundMusic.play());
 let inputList = new Array(); 
 let speed = 0.1;
 let levitate = false;
