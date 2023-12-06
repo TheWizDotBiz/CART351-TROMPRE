@@ -25,6 +25,9 @@ const loader = new GLTFLoader();
 //import { Socket } from "socket.io";
 //import e from "express";
 
+document.onload(){
+    bckgroundMusic.play();
+};
 
 //disables default key use with browser, ie arrowkeys wont move the scrollbar;
 window.addEventListener("keydown", function(e) {
@@ -500,7 +503,7 @@ const closest = () => {
 
 //drawText(wizardList[0], "hello world");
 //newDrawText(wizardList[0], 'Player Text!');
-bckgroundMusic.play();
+//bckgroundMusic.play();
 function animate() {
     //rotato cube
         requestAnimationFrame( animate ); //this requests the animate() function to be ran next frame, this is why you always call it first at the beginning of animate(), so animate is ran again.
