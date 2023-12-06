@@ -103,7 +103,9 @@ function runOnceConnected(){
 
         if(data[i].id == socketId){
             myColorID = data[i].color;
-            makeMonolithsDissapear(myColorID);
+            if(!monolithRemoved){
+                makeMonolithsDissapear(myColorID);
+            }
         }
       }
 
@@ -176,10 +178,10 @@ function runOnceConnected(){
     })
 
     clientSocket.on('deleteMessageFromServer', function(thisID){
-        console.log("running deleteMessageFromServer for ID " + thisID);
+      //  console.log("running deleteMessageFromServer for ID " + thisID);
         for(var i = 0; i < messageList.length; i++){
             if(messageList[i].parentPlayer == thisID){
-                console.log("message found! deleting...");
+               // console.log("message found! deleting...");
                 scene.remove(messageList[i]);
                 messageList.splice(i, 1);
                 console.log(messageList);
@@ -188,7 +190,7 @@ function runOnceConnected(){
     })
 
     clientSocket.on('Haste', function(playerID){
-        console.log("running hast spell on player " + playerID);
+      //  console.log("running hast spell on player " + playerID);
         if(playerID == socketId){
             speed *= 10;
         }
@@ -266,7 +268,7 @@ let newTestColor = new THREE.Color("rgb(255, 0, 0)");
 //let roomRaycastGroup = new THREE.Group();
 
 function loadWizard(wizard){ //wizard should come from localPLayerList
-    console.log("loading a wizard");
+   // console.log("loading a wizard");
     loader.load(wizModelUrls[wizard.color], function(gltf){ //first argument was 'models/wizard.glb'
         //thisWizard.add(gltf.scene);
 
@@ -281,7 +283,7 @@ function loadWizard(wizard){ //wizard should come from localPLayerList
         obj.colorID = wizard.color;
        // obj.material.color.set(colorList[wizard.color]);
        //set color of all objects in mesh
-       console.log('color id is ' + wizard.color);
+      // console.log('color id is ' + wizard.color);
        /*
         obj.traverse((object) => {
             if(object.isMesh){
@@ -301,7 +303,7 @@ function loadWizard(wizard){ //wizard should come from localPLayerList
         obj.disableRaycast = true;
        // obj.layers.set(1);
         wizardList.push(obj);
-        console.log("new wizard with id " + obj.name);
+      //  console.log("new wizard with id " + obj.name);
         //gltf.scene.mesh[0].position.x = wizard.x;
 
     }, undefined, function(error){
@@ -352,7 +354,7 @@ function newDrawText(player, message){
 }
 
 function newDrawSpellText(player, message){
-    console.log("drawing spell text...");
+   // console.log("drawing spell text...");
     ttfLoader.load('fonts/38649_TSOLYANI.ttf', (json) =>{
         RSFont = fontLoader.parse(json);
         const textGeometry = new TextGeometry(message, {height: 0.025, size: 0.3, font: RSFont});
@@ -601,13 +603,13 @@ function handleInput(){
             case " ":
               //  newDrawText(wizardList[0], "spacebar!");
               //clientSocket.emit('sendMessage', socketId, "sent a message here!", myColorID);
-              console.log("my color ID is " + myColorID);
+             // console.log("my color ID is " + myColorID);
             break;
 
             case "t":
             case "y":
             case "Enter":
-                    console.log("chatting...");
+                  //  console.log("chatting...");
                     let chatMessage = prompt("say:");
                     if(chatMessage.length > 0){
                         clientSocket.emit('sendMessage', socketId, chatMessage, myColorID);
@@ -628,7 +630,7 @@ function raycastCheckBackwards(){
     var BACK = new THREE.Vector3(0, 0, -1);
     raycaster.set(camera.position.copy, BACK);
     const intersects = raycaster.intersectObjects(scene.children);
-    console.log(intersects);
+   // console.log(intersects);
     if(intersects.length){
         returnValue = true;
     }
@@ -673,7 +675,7 @@ function raycastCheck(isForward){
     //console.log(camera.getWorldDirection);
   //  raycaster.set(camera.position.copy, camera.getWorldDirection);
     const intersects = raycaster.intersectObjects(scene.children);
-    console.log(intersects);
+   // console.log(intersects);
     if(intersects.length > 0){
         returnValue = true;
     }
@@ -859,7 +861,7 @@ function deathSpell(){
         if(wizardList[i].name != socketId){
             var targetPos = new THREE.Vector3(wizardList[i].x, wizardList[i].y, wizardList[i].z);
             var dist = myPos.distanceTo(targetPos);
-            console.log("distance is " + dist);
+          //  console.log("distance is " + dist);
             if(dist <= 8){
                 clientSocket.emit('killPlayer', wizardList[i].name);
             }
@@ -873,7 +875,7 @@ function selectiveDeathSpell(colorID){
         if(wizardList[i].name != socketId){
             var targetPos = new THREE.Vector3(wizardList[i].x, wizardList[i].y, wizardList[i].z);
             var dist = myPos.distanceTo(targetPos);
-            console.log("distance is " + dist);
+           // console.log("distance is " + dist);
             if(dist <= 8 && wizardList[i].color == colorID){
                 clientSocket.emit('killPlayer', wizardList[i].name);
             }
@@ -934,6 +936,7 @@ function classicPlaySound(soundID){
 }
 
 let monolithNames = ['Monolith_garden_red', 'Monolith_city_blue', 'Monolith_cave_green', 'Monolith_waterrealm_yellow', 'Monolith_waterrealm_white', 'Monolith_cave_purple', 'Monolith_orange']; //there is no monolith for orange, lol!
+let monolithRemoved = false;
 function makeMonolithsDissapear(colorID){
     /*
    roomCol.traverse((object) =>{
@@ -942,10 +945,11 @@ function makeMonolithsDissapear(colorID){
     }
    })*/
    scene.traverse(c => {
-    console.log("checking if " + c.name + " is your monolith...");
+   // console.log("checking if " + c.name + " is your monolith...");
         if(c.name == monolithNames[colorID]){
-            console.log(c.name + " is your monolith!");
+          //  console.log(c.name + " is your monolith!");
             c.parent.remove(c);
+            monolithRemoved = true;
         }
    })
 
