@@ -946,9 +946,9 @@ function makeMonolithsDissapear(colorID){
         if(c.name == monolithNames[colorID]){
             console.log(c.name + " is your monolith!");
             c.traverse(d =>{
-                c.remove(d);
+                c.remove(d.name);
             })
-            scene.remove(c);
+            scene.remove(c.name);
         }
    })
 
