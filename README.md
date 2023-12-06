@@ -1,28 +1,27 @@
 # WIZARD GAME
-A game about wizards who talk to eachother and hang out in a cool place
+A game about wizards who talk to eachother and hang out in a cool place and also may or may not cast spells
 
 # HOW TO RUN
-Currently only works locally, you can join through multiple tabs to imuate multiple players.
-1. Download and install Node.js as well as VScode if you dont already have it
-2. Download and export the desktop branch of this repo
-3. Open the folder in vscode.
-4. In terminal, type node index.js to begin hosting.
-5. To join, go in a browser and punch in the address http://localhost:4200/client
-6. Wizard it up.
+Go to https://wizardgame-1b46c94f2b34.herokuapp.com/
 
-# PLANNED FEATURES
+# FEATURES
 - Spell incantations
 - Collision detection
 - verticality
 - chat
 - Randomized player colors
-- environment taht react to local player color
+- environment that react to local player color
 
   # HOW IT WORKY
   Uses Node.js as well as the Socket.io API for networking purposes.
   Uses Three.js from 3d rendering and environments.
+  Uses Enable3D for collision detection sort of
   Mostly all scripted in HTML/JS
 
   # ASSET CREDITS
   I made em.
-  Some textures are from Amulets & Armor for the MS-DOS computer http://amuletsandarmor.com/
+  Some textures/sounds are from Amulets & Armor for the MS-DOS computer http://amuletsandarmor.com/
+  Music is from Everquest
+
+  # HOW DO I CAST SPELL
+  :)
