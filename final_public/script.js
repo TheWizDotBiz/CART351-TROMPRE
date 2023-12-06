@@ -103,6 +103,7 @@ function runOnceConnected(){
 
         if(data[i].id == socketId){
             myColorID = data[i].color;
+            makeMonolithsDissapear(myColorID);
         }
       }
 
@@ -406,7 +407,7 @@ camera.position.z = 5;
 camera.position.y = 2;
 let cameraPos = [camera.position.x, camera.position.y, camera.position.z, camera.rotation.y];
 
-room = loader.load('models/room_v5_2.glb', function(gltf){
+room = loader.load('models/room_final.glb', function(gltf){
     scene.add(gltf.scene);
     physics.add.existing(gltf.scene, { shape: 'convex'});
     gltf.scene.body.setCollisionFlags(1); //set to kinematic
@@ -930,4 +931,13 @@ function playSoundOnPlayer(playerID, soundID){
 
 function classicPlaySound(soundID){
     spellSounds[soundID].play();
+}
+
+let monolithNames = ['Monolith_garden_red', 'Monolith_city_blue', 'Monolith_cave_green', 'Monolith_waterrealm_yellow', 'Monolith_waterrealm_white', 'Monolith_cave_purple', 'Monolith_orange']; //there is no monolith for orange, lol!
+function makeMonolithsDissapear(colorID){
+   roomCol.traverse((object) =>{
+    if(object.name == monolithNames[colorID]){
+        roomCol.remove(object);
+    }
+   })
 }
