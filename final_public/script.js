@@ -942,7 +942,9 @@ function makeMonolithsDissapear(colorID){
     }
    })*/
    scene.traverse(c => {
-        if(c.isMesh && c.name == monolithNames[colorID]){
+    console.log("checking if " + c.name + " is your monolith...");
+        if(c.name == monolithNames[colorID]){
+            console.log(c.name + " is your monolith!");
             scene.remove(c);
         }
    })
