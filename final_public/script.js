@@ -862,7 +862,7 @@ function deathSpell(){
             var targetPos = new THREE.Vector3(wizardList[i].x, wizardList[i].y, wizardList[i].z);
             var dist = myPos.distanceTo(targetPos);
           //  console.log("distance is " + dist);
-            if(dist <= 8){
+            if(dist <= 12){
                 clientSocket.emit('killPlayer', wizardList[i].name);
             }
         }
@@ -876,7 +876,7 @@ function selectiveDeathSpell(colorID){
             var targetPos = new THREE.Vector3(wizardList[i].x, wizardList[i].y, wizardList[i].z);
             var dist = myPos.distanceTo(targetPos);
            // console.log("distance is " + dist);
-            if(dist <= 8 && wizardList[i].color == colorID){
+            if(dist <= 12 && wizardList[i].color == colorID){
                 clientSocket.emit('killPlayer', wizardList[i].name);
             }
         }
