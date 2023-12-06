@@ -242,7 +242,7 @@ function runOnceConnected(){
     })
 
     //music
-    bckgroundMusic.play();
+   // bckgroundMusic.play();
 
     setInterval(handleMessageTimer, 1000);
 }
@@ -500,6 +500,7 @@ const closest = () => {
 
 //drawText(wizardList[0], "hello world");
 //newDrawText(wizardList[0], 'Player Text!');
+bckgroundMusic.play();
 function animate() {
     //rotato cube
         requestAnimationFrame( animate ); //this requests the animate() function to be ran next frame, this is why you always call it first at the beginning of animate(), so animate is ran again.
