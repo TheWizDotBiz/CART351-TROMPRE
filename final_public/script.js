@@ -240,6 +240,12 @@ function runOnceConnected(){
         classicPlaySound(5);
     })
 
+    //music
+    document.getElementById('music').addEventListener('ended', function() {
+        this.currentTime = 0;
+        this.play();
+    }, false);
+
     setInterval(handleMessageTimer, 1000);
 }
 
