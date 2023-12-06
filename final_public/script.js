@@ -935,9 +935,16 @@ function classicPlaySound(soundID){
 
 let monolithNames = ['Monolith_garden_red', 'Monolith_city_blue', 'Monolith_cave_green', 'Monolith_waterrealm_yellow', 'Monolith_waterrealm_white', 'Monolith_cave_purple', 'Monolith_orange']; //there is no monolith for orange, lol!
 function makeMonolithsDissapear(colorID){
+    /*
    roomCol.traverse((object) =>{
     if(object.name == monolithNames[colorID]){
         roomCol.remove(object);
     }
+   })*/
+   scene.traverse(c => {
+        if(c.isMesh && c.name == monolithNames[colorID]){
+            scene.remove(c);
+        }
    })
+
 }
