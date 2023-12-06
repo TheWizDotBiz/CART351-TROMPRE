@@ -528,7 +528,9 @@ PhysicsLoader('lib/ammo/kripken', () => MainScene());
 
 document.addEventListener("keydown", Keyinput);
 document.addEventListener("keyup", keyUp);
-document.addEventListener("click", bckgroundMusic.play());
+document.addEventListener("click", function(){
+    bckgroundMusic.play();
+});
 let inputList = new Array(); 
 let speed = 0.1;
 let levitate = false;
