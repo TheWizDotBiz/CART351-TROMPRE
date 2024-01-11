@@ -882,11 +882,12 @@ function forceTextToLookAtCam(){
     for(var i = 0; i < messageList.length; i++){
       //  console.log("message " + i);
         messageList[i].lookAt(camera.position);
+        console.log("messageList length is " + messageList.length);
         console.log("messagelist index " + i + "parentPlayer id is " + messageList[i].parentPlayer);
-        var temp = messageList[i].parentPlayer;
+        var temp = messageList[i];
         //retrieve parent player position
         for(var j = 0; j < wizardList.length; j++){
-            if(temp == wizardList[j].name){ //parentPlayer can't be retrieved? cause of issue for messages not showing up for more than 3 players
+            if(temp.parentPlayer == wizardList[j].name){ //parentPlayer can't be retrieved? cause of issue for messages not showing up for more than 3 players
                 var newXoffset = messageXoffset;
                 if(camera.position.z >= wizardList[j].position.z){
                     newXoffset *= -1;
