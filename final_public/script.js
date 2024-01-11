@@ -85,6 +85,7 @@ function runOnceConnected(){
                 }
             }
             if(isDupe == false){
+                console.log("creating wizard with ID " + data[i].id);
                 loadWizard(data[i]);
             }
             
