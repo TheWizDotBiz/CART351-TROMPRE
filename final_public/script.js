@@ -115,6 +115,7 @@ function runOnceConnected(){
                     }
                 }
                 if(dupe == true){
+                    scene.remove(wizardList[j]);
                     wizardList.splice(j, 1);
                 }else{
                     wizardList[j].position.x = data[i].x;
