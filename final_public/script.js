@@ -616,6 +616,7 @@ function handleInput(){
               //  newDrawText(wizardList[0], "spacebar!");
               //clientSocket.emit('sendMessage', socketId, "sent a message here!", myColorID);
              // console.log("my color ID is " + myColorID);
+             console.log(messageList);
             break;
 
             case "t":
