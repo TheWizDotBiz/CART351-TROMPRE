@@ -73,24 +73,24 @@ function runOnceConnected(){
 
     //draw wizards based on localPlayerList;
     for(var i = 0; i < data.length; i++){
-        console.log("comparing " + data[i].id + " to " + socketId);
+       // console.log("comparing " + data[i].id + " to " + socketId);
         if(data[i].id != socketId){
             //for loop fix to prevent duplicate player IDs in wizardList NEW
             var isDupe = false;
             for(var j = 0; j < wizardList.length; j++){
-                console.log("dupe check for IDs " + data[i].id + " and " + wizardList[j].name);
+               // console.log("dupe check for IDs " + data[i].id + " and " + wizardList[j].name);
                 if(data[i].id == wizardList[j].name){
                     console.log("that's a dupe!");
                     isDupe = true;
                 }
             }
             if(isDupe == false){
-                console.log("creating wizard with ID " + data[i].id);
+              //  console.log("creating wizard with ID " + data[i].id);
                 loadWizard(data[i]);
             }
             
         }else{
-            console.log("ID " + data[i].id + " is local player, not creating a wizard for this one");
+          //  console.log("ID " + data[i].id + " is local player, not creating a wizard for this one");
         }
     }
 
@@ -102,7 +102,7 @@ function runOnceConnected(){
       //console.log("data length is " + data.length + " wizardList length is " + wizardList.length);  
       //movement
       for(var i = 0; i < data.length; i++){
-        console.log("updatePLayerFromServer data id at index " + i + " is " + data[i].id);
+      //  console.log("updatePLayerFromServer data id at index " + i + " is " + data[i].id);
         var exists = false;
         var dupeCheckArray = [];
         for(var j = 0 ; j < wizardList.length; j++){
@@ -133,14 +133,14 @@ function runOnceConnected(){
         if(exists == false && data[i].id != socketId){
             var isDupe = false;
             for(var dupeIndex = 0; dupeIndex < wizardList.length; dupeIndex++){
-                console.log("updatePlayerFromServer dupe check on wizard " + wizardList[dupeIndex].name + " and data " + data[i].id);
+              //  console.log("updatePlayerFromServer dupe check on wizard " + wizardList[dupeIndex].name + " and data " + data[i].id);
                 if(wizardList[dupeIndex].name == data[i].id){
                     console.log("dupe found");
                     isDupe = true;
                 }
             }
             if(isDupe == false){
-                console.log("updatePlayerFromServer creating wizard " + data[i].id);
+             //   console.log("updatePlayerFromServer creating wizard " + data[i].id);
                 loadWizard(data[i]);
             }
             
@@ -166,7 +166,7 @@ function runOnceConnected(){
 
      //KEYWORD SAND
      for(var index = 0; index < wizardList.length; index++){
-        console.log("updatePlayerFromServer wizard id at index " + index + " is " + wizardList[index].name);
+       // console.log("updatePlayerFromServer wizard id at index " + index + " is " + wizardList[index].name);
      }
       //cleanup
       /*
@@ -398,10 +398,10 @@ function newDrawText(player, message){
         textMesh.position.y = player.position.y + messageYoffset;
         textMesh.position.z = player.position.z;
         textMesh.parentPlayer = player.name;
-        console.log("creating new text object for parentPlayer " + textMesh.parentPlayer);
-        console.log("playerId list is the following:");
+      //  console.log("creating new text object for parentPlayer " + textMesh.parentPlayer);
+        //console.log("playerId list is the following:");
         for(var i = 0; i < wizardList.length; i++){
-            console.log("player " + i + " id is " + wizardList[i].name);
+          //  console.log("player " + i + " id is " + wizardList[i].name);
         }
         textMesh.lifetime = 8;
         textMesh.message = message;
@@ -669,7 +669,7 @@ function handleInput(){
               //  newDrawText(wizardList[0], "spacebar!");
               //clientSocket.emit('sendMessage', socketId, "sent a message here!", myColorID);
              // console.log("my color ID is " + myColorID);
-             console.log(messageList.length);
+            // console.log(messageList.length);
             break;
 
             case "t":
@@ -882,9 +882,9 @@ function forceTextToLookAtCam(){
     for(var i = 0; i < messageList.length; i++){
       //  console.log("message " + i);
         messageList[i].lookAt(camera.position);
-        console.log("messageList length is " + messageList.length);
-        console.log("messagelist index " + i + "parentPlayer id is " + messageList[i].parentPlayer);
-        console.log("message coords are " + messageList[i].position);
+      //  console.log("messageList length is " + messageList.length);
+       // console.log("messagelist index " + i + "parentPlayer id is " + messageList[i].parentPlayer);
+        //console.log("message coords are " + messageList[i].position);
         var temp = messageList[i];
         var exists = false;
         //retrieve parent player position
@@ -905,7 +905,7 @@ function forceTextToLookAtCam(){
             }
         }
         if(exists = false){
-            console.log("removing message with no owner with id " + temp.parentPlayer);
+          //  console.log("removing message with no owner with id " + temp.parentPlayer);
             scene.remove(temp);
             messageList.splice(i, 1);
         }
