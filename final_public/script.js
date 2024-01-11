@@ -351,6 +351,7 @@ function newDrawText(player, message){
         textMesh.position.y = player.position.y + messageYoffset;
         textMesh.position.z = player.position.z;
         textMesh.parentPlayer = player.name;
+        console.log("creating new text object for parentPlayer " + textMesh.parentPlayer);
         textMesh.lifetime = 8;
         textMesh.message = message;
         messageList.push(textMesh);
@@ -831,7 +832,7 @@ function forceTextToLookAtCam(){
         messageList[i].lookAt(camera.position);
         //retrieve parent player position
         for(var j = 0; j < wizardList.length; j++){
-            if(messageList[i].parentPlayer == wizardList[j].name){
+            if(messageList[i].parentPlayer == wizardList[j].name){ //parentPlayer can't be retrieved? cause of issue for messages not showing up for more than 3 players
                 var newXoffset = messageXoffset;
                 if(camera.position.z >= wizardList[j].position.z){
                     newXoffset *= -1;
