@@ -352,6 +352,10 @@ function newDrawText(player, message){
         textMesh.position.z = player.position.z;
         textMesh.parentPlayer = player.name;
         console.log("creating new text object for parentPlayer " + textMesh.parentPlayer);
+        console.log("playerId list is the following:");
+        for(var i = 0; i < wizardList.length; i++){
+            console.log("player " + i + " id is " + wizardList[i].name);
+        }
         textMesh.lifetime = 8;
         textMesh.message = message;
         messageList.push(textMesh);
