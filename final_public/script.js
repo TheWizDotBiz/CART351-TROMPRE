@@ -75,7 +75,17 @@ function runOnceConnected(){
     for(var i = 0; i < data.length; i++){
         console.log("comparing " + data[i].id + " to " + socketId);
         if(data[i].id != socketId){
-            loadWizard(data[i]);
+            //for loop fix to prevent duplicate player IDs in wizardList NEW
+            var isDupe = false;
+            for(var j = 0; j < wizardList.length; j++){
+                if(data[i].id == wizardList[j].name){
+                    isDupe = true;
+                }
+            }
+            if(isDupe == false){
+                loadWizard(data[i]);
+            }
+            
         }
     }
 
