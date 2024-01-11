@@ -102,6 +102,7 @@ function runOnceConnected(){
       //console.log("data length is " + data.length + " wizardList length is " + wizardList.length);  
       //movement
       for(var i = 0; i < data.length; i++){
+        console.log("updatePLayerFromServer data id at index " + i + " is " + data[i].id);
         var exists = false;
         for(var j = 0 ; j < wizardList.length; j++){
             if(wizardList[j].name == data[i].id){
@@ -136,6 +137,10 @@ function runOnceConnected(){
         }
      }
 
+     //KEYWORD SAND
+     for(var index = 0; index < wizardList.length; index++){
+        console.log("updatePlayerFromServer wizard id at index " + index + " is " + wizardList[index].name);
+     }
       //cleanup
       /*
       for(var n = 0; n < wizardList.length; n++){
@@ -457,6 +462,7 @@ function drawPlayers(){
     wizardList.splice(0, wizardList.length);
 
     //draw wizards based on localPlayerList;
+    //localPLayerList isnt used so this shouldnt do anything but whatever
     for(var i = 0; i < localPlayerList.length; i++){
         loadWizard(localPlayerList[i]);
     }
