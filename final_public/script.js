@@ -886,9 +886,11 @@ function forceTextToLookAtCam(){
         console.log("messagelist index " + i + "parentPlayer id is " + messageList[i].parentPlayer);
         console.log("message coords are " + messageList[i].position);
         var temp = messageList[i];
+        var exists = false;
         //retrieve parent player position
         for(var j = 0; j < wizardList.length; j++){
             if(temp.parentPlayer == wizardList[j].name){ //parentPlayer can't be retrieved? cause of issue for messages not showing up for more than 3 players
+                exists = true;
                 var newXoffset = messageXoffset;
                 if(camera.position.z >= wizardList[j].position.z){
                     newXoffset *= -1;
@@ -897,10 +899,15 @@ function forceTextToLookAtCam(){
                 temp.position.y = wizardList[j].position.y + messageYoffset;
                 temp.position.z = wizardList[j].position.z;
             }else{
-                console.log("removing message via forceText with id " + temp.parentPlayer);
-                scene.remove(temp);
-                messageList.splice(i, 1);
+              //  console.log("removing message via forceText with id " + temp.parentPlayer);
+                //scene.remove(temp);
+                //messageList.splice(i, 1);
             }
+        }
+        if(exists = false){
+            console.log("removing message with no owner with id " + temp.parentPlayer);
+            scene.remove(temp);
+            messageList.splice(i, 1);
         }
     }
 }
