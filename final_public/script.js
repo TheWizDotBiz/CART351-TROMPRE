@@ -892,11 +892,11 @@ function forceTextToLookAtCam(){
                 if(camera.position.z >= wizardList[j].position.z){
                     newXoffset *= -1;
                 }
-                messageList[i].position.x = wizardList[j].position.x + newXoffset;
-                messageList[i].position.y = wizardList[j].position.y + messageYoffset;
-                messageList[i].position.z = wizardList[j].position.z;
+                temp.position.x = wizardList[j].position.x + newXoffset;
+                temp.position.y = wizardList[j].position.y + messageYoffset;
+                temp.position.z = wizardList[j].position.z;
             }else{
-                scene.remove(messageList[i]);
+                scene.remove(temp);
                 messageList.splice(i, 1);
             }
         }
