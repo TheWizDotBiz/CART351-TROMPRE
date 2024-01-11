@@ -78,6 +78,7 @@ function runOnceConnected(){
             //for loop fix to prevent duplicate player IDs in wizardList NEW
             var isDupe = false;
             for(var j = 0; j < wizardList.length; j++){
+                console.log("dupe check for IDs " + data[i].id + " and " + wizardList[j].name);
                 if(data[i].id == wizardList[j].name){
                     isDupe = true;
                 }
