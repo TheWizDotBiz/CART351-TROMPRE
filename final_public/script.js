@@ -884,6 +884,7 @@ function forceTextToLookAtCam(){
         messageList[i].lookAt(camera.position);
         console.log("messageList length is " + messageList.length);
         console.log("messagelist index " + i + "parentPlayer id is " + messageList[i].parentPlayer);
+        console.log("message coords are " + messageList[i].position);
         var temp = messageList[i];
         //retrieve parent player position
         for(var j = 0; j < wizardList.length; j++){
@@ -896,6 +897,7 @@ function forceTextToLookAtCam(){
                 temp.position.y = wizardList[j].position.y + messageYoffset;
                 temp.position.z = wizardList[j].position.z;
             }else{
+                console.log("removing message via forceText with id " + temp.parentPlayer);
                 scene.remove(temp);
                 messageList.splice(i, 1);
             }
