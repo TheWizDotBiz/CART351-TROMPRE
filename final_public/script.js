@@ -104,6 +104,7 @@ function runOnceConnected(){
       for(var i = 0; i < data.length; i++){
         console.log("updatePLayerFromServer data id at index " + i + " is " + data[i].id);
         var exists = false;
+        var dupeCheckArray = [];
         for(var j = 0 ; j < wizardList.length; j++){
             if(wizardList[j].name == data[i].id){
                 exists = true;
@@ -116,7 +117,17 @@ function runOnceConnected(){
             }
         }
         if(exists == false && data[i].id != socketId){
-            loadWizard(data[i]);
+            var isDupe = false;
+            for(var dupeIndex = 0; dupeIndex < wizardList.length; dupeIndex++){
+                if(wizardList[dupeIndex].name == data[i].id){
+                    isDupe = true;
+                }
+            }
+            if(isDupe == false){
+                console.log("updatePlayerFromServer creating wizard " + data[i].id);
+                loadWizard(data[i]);
+            }
+            
         }
 
         if(data[i].id == socketId){
