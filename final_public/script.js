@@ -119,7 +119,9 @@ function runOnceConnected(){
         if(exists == false && data[i].id != socketId){
             var isDupe = false;
             for(var dupeIndex = 0; dupeIndex < wizardList.length; dupeIndex++){
+                console.log("updatePlayerFromServer dupe check on wizard " + wizardList[dupeIndex].name + " and data " + data[i].id);
                 if(wizardList[dupeIndex].name == data[i].id){
+                    console.log("dupe found");
                     isDupe = true;
                 }
             }
@@ -475,7 +477,7 @@ function drawPlayers(){
     //draw wizards based on localPlayerList;
     //localPLayerList isnt used so this shouldnt do anything but whatever
     for(var i = 0; i < localPlayerList.length; i++){
-        loadWizard(localPlayerList[i]);
+       // loadWizard(localPlayerList[i]);
     }
 
 }
