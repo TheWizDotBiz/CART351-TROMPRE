@@ -108,12 +108,25 @@ function runOnceConnected(){
         for(var j = 0 ; j < wizardList.length; j++){
             if(wizardList[j].name == data[i].id){
                 exists = true;
-              //  console.log("moving wizard " + wizardList[j].name + " to " + data[i].x + " " + data[i].y + data[i].z);
-                wizardList[j].position.x = data[i].x;
+                var dupe = false;
+                for(var d = 0; d < dupeCheckArray.length; d++){
+                    if(wizardList[j].name == dupeCheckArray[d]){
+                        dupe = true;
+                    }
+                }
+                if(dupe == true){
+                    wizardList.splice(j, 1);
+                }else{
+                    wizardList[j].position.x = data[i].x;
                 wizardList[j].position.y = data[i].y;
                 wizardList[j].position.z = data[i].z;
                 wizardList[j].rotation.y = data[i].r;
                 wizardList[j].color = data[i].color;
+
+                dupeCheckArray.push(wizardList[j].name);
+                }
+              //  console.log("moving wizard " + wizardList[j].name + " to " + data[i].x + " " + data[i].y + data[i].z);
+                
             }
         }
         if(exists == false && data[i].id != socketId){
