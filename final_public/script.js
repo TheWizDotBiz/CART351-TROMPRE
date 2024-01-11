@@ -80,6 +80,7 @@ function runOnceConnected(){
             for(var j = 0; j < wizardList.length; j++){
                 console.log("dupe check for IDs " + data[i].id + " and " + wizardList[j].name);
                 if(data[i].id == wizardList[j].name){
+                    console.log("that's a dupe!");
                     isDupe = true;
                 }
             }
@@ -87,6 +88,8 @@ function runOnceConnected(){
                 loadWizard(data[i]);
             }
             
+        }else{
+            console.log("ID " + data[i].id + " is local player, not creating a wizard for this one");
         }
     }
 
